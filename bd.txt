@@ -1,0 +1,76 @@
+CREATE DATABASE IF NOT EXISTS `comfy_shop` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `comfy_shop`;
+
+-- Таблица пользователей (Исправлена длина email)
+CREATE TABLE IF NOT EXISTS `users` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `name` VARCHAR(255) NOT NULL,
+    `email` VARCHAR(191) NOT NULL UNIQUE,
+    `password` VARCHAR(255) NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- Таблица категорий товаров (Исправлена длина code)
+CREATE TABLE IF NOT EXISTS `categories` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `name` VARCHAR(255) NOT NULL,
+    `code` VARCHAR(191) NOT NULL UNIQUE
+) ENGINE=InnoDB;
+
+-- Таблица товаров
+CREATE TABLE IF NOT EXISTS `products` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `category_id` INT NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `price` INT NOT NULL,
+    `image` VARCHAR(255) DEFAULT NULL,
+    `popularity` INT DEFAULT 0,
+    FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Таблица заказов
+CREATE TABLE IF NOT EXISTS `orders` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT DEFAULT NULL,
+    `order_number` VARCHAR(50) NOT NULL UNIQUE,
+    `customer_name` VARCHAR(255) NOT NULL,
+    `customer_email` VARCHAR(255) NOT NULL,
+    `customer_phone` VARCHAR(50) NOT NULL,
+    `customer_address` TEXT NOT NULL,
+    `payment_method` VARCHAR(100) NOT NULL,
+    `total_price` INT NOT NULL,
+    `status` ENUM('open', 'closed') DEFAULT 'open',
+    `created_at` DATE NOT NULL,
+    `delivery_date` DATE NOT NULL,
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- Таблица позиций в заказе
+CREATE TABLE IF NOT EXISTS `order_items` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `order_id` INT NOT NULL,
+    `product_id` INT NOT NULL,
+    `price` INT NOT NULL,
+    `quantity` INT NOT NULL,
+    FOREIGN KEY (`order_id`) REFERENCES `orders`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`product_id`) REFERENCES `products`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Наполнение базовыми категориями
+INSERT INTO `categories` (`id`, `name`, `code`) VALUES
+(1, 'Народные', 'narodnye'),
+(2, 'Статуэтки', 'statuetki'),
+(3, 'Авторские', 'avtorskie'),
+(4, 'Декоративные', 'dekorativnye'),
+(5, 'Оригинальные', 'originalnye'),
+(6, 'Брелки', 'brelki');
+
+-- Наполнение товарами
+INSERT INTO `products` (`id`, `category_id`, `name`, `price`, `image`, `popularity`) VALUES
+(1, 1, 'Сувенир 1', 500, 'souvenir1.png', 15),
+(2, 2, 'Сувенир 2', 300, 'souvenir2.png', 5),
+(3, 3, 'Сувенир 3', 1000, 'souvenir3.png', 25),
+(4, 4, 'Сувенир 4', 700, 'souvenir4.png', 8),
+(5, 5, 'Сувенир 5', 800, 'souvenir5.png', 12),
+(6, 6, 'Сувенир 6', 400, 'souvenir6.png', 20),
+(7, 1, 'Сувенир 7', 450, 'souvenir7.png', 3);
